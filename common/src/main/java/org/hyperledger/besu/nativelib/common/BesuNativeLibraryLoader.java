@@ -40,7 +40,10 @@ public class BesuNativeLibraryLoader {
   public static void registerJNA(Class jnaClass, String libraryName) {
 
     try {
-      final Optional<Path> libPath = extract(jnaClass, libraryName);
+      String moduleContextClassName = Thread.currentThread().getStackTrace()[2].getClassName();
+      Class<?> moduleContextClass = Class.forName(moduleContextClassName);
+
+      final Optional<Path> libPath = extract(moduleContextClass, libraryName);
 
       if (libPath.isPresent()) {
         NativeLibrary lib = NativeLibrary.getInstance(libPath.get().toString());
@@ -55,6 +58,8 @@ public class BesuNativeLibraryLoader {
                 "Couldn't load native library (%s). It wasn't available at %s or the library path.",
                 libraryName, asLibraryResourcePath(libraryName));
         throw new RuntimeException(exceptionMessage);
+    } catch (ClassNotFoundException e) {
+        throw new RuntimeException(e);
     }
   }
 
